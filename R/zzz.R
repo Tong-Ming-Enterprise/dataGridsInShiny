@@ -1,0 +1,3 @@
+.onLoad <- function(...){
+	# later we will use shiny::registerInputHandler here...
+}
