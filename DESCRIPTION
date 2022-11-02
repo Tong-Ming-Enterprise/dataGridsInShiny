@@ -13,5 +13,10 @@ BugReports: https://github.com/michael-dewar/datagridxlr/issues
 Imports: 
     magrittr
 Suggests: 
+	DT,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
+Depends: 
+	htmltools,
+	purrr,
+    shiny

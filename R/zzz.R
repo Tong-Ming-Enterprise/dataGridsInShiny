@@ -1,3 +1,7 @@
 .onLoad <- function(libname, pkgname){
-	shiny::registerInputHandler("datagridxl.output", datagridxl_output_handler)
+	shiny::registerInputHandler("datagridxlr.griddata", datagridxl_output_handler)
+}
+
+.onDetach <- function(libpath){
+	shiny::removeInputHandler("datagridxlr.griddata")
 }

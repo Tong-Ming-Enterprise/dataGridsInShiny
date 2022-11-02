@@ -2,6 +2,6 @@
 
 export("%>%")
 export(datagridxl)
-export(datagridxlOutput)
-export(renderDatagridxl)
+export(datagridxlUI)
+export(datagridxl_output_handler)
 importFrom(magrittr,"%>%")
