@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>My Web App</title>
+	<script src="https://code.datagridxl.com/datagridxl2.js"></script>
+</head>
+<body>
+	<p>This is based on datagridXL's documentation.</p>
+	<div id="grid" style="width:100%;height:400px;"></div>
+	<script>
+		var some_data = [
+			[1, 2, 3],
+			["a", "b", "c"],
+			["d", "e", "f"]
+			];
+		var grid = new DataGridXL("grid", {data: some_data});
+		</script>
+</body>
+</html>

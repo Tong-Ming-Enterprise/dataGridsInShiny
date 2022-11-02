@@ -1,6 +1,6 @@
 Package: datagridxlr
 Title: Shiny wrapper for datagridXL
-Version: 0.0.0.9000
+Version: 0.0.1
 Authors@R: 
     person("Michael", "Dewar", , "michael.p.dewar@gmail.com", role = c("aut", "cre"))
 Description: This package is a Shiny wrapper around the Javascript package `datagridXL`.

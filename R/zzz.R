@@ -1,3 +1,3 @@
-.onLoad <- function(...){
-	# later we will use shiny::registerInputHandler here...
+.onLoad <- function(libname, pkgname){
+	shiny::registerInputHandler("datagridxl.output", datagridxl_output_handler)
 }
