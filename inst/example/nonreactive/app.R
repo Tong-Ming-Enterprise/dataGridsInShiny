@@ -9,6 +9,11 @@ ui <- fluidPage(
 	tags$button(class = "btn btn-primary",
 				onClick = "sendGridData()",
 				"Send Data to DT"),
+	tags$button(class = "btn btn-danger",
+				id = "unsaved_warning_button",
+				style = 'visibility:hidden;',
+				"You have unsaved changes!"),
+	# textOutput("unsaved_warning"),
 	datagridxlr::datagridxlUI(),
 	DT::DTOutput("dt")
 
@@ -31,6 +36,14 @@ server <- function(input, output, session) {
 	output$dt <- DT::renderDT({
 		req(input$griddata)
 		input$griddata})
+
+	# output$unsaved_warning <- shiny::renderText({
+	# 	req(input$unsaved_changes)
+	# 	if(input$unsaved_changes)
+	# 		return("You have unsaved changes!")
+	# 	else
+	# 		return()
+	# })
 }
 
 shinyApp(ui, server)
