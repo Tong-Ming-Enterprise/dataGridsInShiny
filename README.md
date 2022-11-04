@@ -21,8 +21,8 @@ You can install the development version of dataGridsInShiny from [GitHub](https:
 devtools::install_github("michael-dewar/dataGridsInShiny")
 ```
 
-But it will be most useful for you to download a copy of the repo so that you can look at the code in the `inst` folder.
+But it will be most useful for you to download a copy of the repo so that you can easily look at the code in the `inst` folder.
 
 ## How To Use This Package
 
-Look at the example apps in the subfolders of `inst`.  Each grid type as its own example apps.
+Look at the example apps in the subfolders of `inst`.  Each grid type has its own example apps.
