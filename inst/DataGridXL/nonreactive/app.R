@@ -1,6 +1,6 @@
 library(shiny)
 
-addResourcePath("assets", system.file("example/nonreactive/assets", package = "datagridxlr"))
+addResourcePath("assets", system.file("DataGridXL/nonreactive/assets", package = "dataGridsInShiny"))
 
 ui <- fluidPage(
 	tags$head(tags$script(src= "assets/this_app.js")),
@@ -14,7 +14,7 @@ ui <- fluidPage(
 				style = 'visibility:hidden;',
 				"You have unsaved changes!"),
 	# textOutput("unsaved_warning"),
-	datagridxlr::datagridxlUI(),
+	dataGridsInShiny::datagridxlUI(),
 	DT::DTOutput("dt")
 
 )
@@ -25,12 +25,12 @@ server <- function(input, output, session) {
 						rowHeaderWidth = 300,
 						allowEditCells = FALSE)
 		session$sendCustomMessage(type = "create-grid",
-								  message = datagridxlr::datagridxl(mtcars, options))}) %>%
+								  message = dataGridsInShiny::datagridxl(mtcars, options))}) %>%
 		bindEvent(input$create_grid_mtcars)
 
 	observe({
 		session$sendCustomMessage(type = "create-grid",
-								  message = datagridxlr::datagridxl(iris))}) %>%
+								  message = dataGridsInShiny::datagridxl(iris))}) %>%
 		bindEvent(input$create_grid_iris)
 
 	output$dt <- DT::renderDT({

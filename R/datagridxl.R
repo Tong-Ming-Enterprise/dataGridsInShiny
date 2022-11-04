@@ -1,7 +1,7 @@
 
 #' Prepare Data and Options for DataGridXL
 #'
-#' See sample app in package for example: `system.file("example/nonreactive/app.R", package = "datagridxlr")`
+#' See sample app in package for example: `system.file("DataGridXL/nonreactive/app.R", package = "dataGridsInShiny")`
 #'
 #' @param data data.frame to show
 #' @param options list of options according to DataGridXL documentation
@@ -13,13 +13,13 @@ datagridxl <- function(data, options = list()){
 	stopifnot(is.data.frame(data))
 	stopifnot(is.list(options))
 
-	# drop row names
+	# Drop row names because these seem to cause problems
 	rownames(data) <- NULL
 
 	# Convert data.frame to rowwise list
 	data <- apply(data, 1, as.list)
 
-	# Later add options to this list...
+	# Add options to this list...
 	c(list(data = data), options)
 }
 
@@ -42,10 +42,10 @@ datagridxlUI <- function(id = "datagrid", width = "100%", height = "400px"){
 	grid <-do.call(htmltools::div, args)
 
 	# Prepare dependency
-	path <- system.file(package = "datagridxlr")
+	path <- system.file("DataGridXL", package = "dataGridsInShiny")
 	deps <- htmltools::htmlDependency(
-		name = "datagridxlr",
-		version = utils::packageVersion("datagridxlr"),
+		name = "DataGridXL",
+		version = "2.22.07.30",
 		src = c(file = path),
 		script = c("datagridxl2.js")
 	)

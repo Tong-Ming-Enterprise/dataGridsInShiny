@@ -1,9 +1,9 @@
-Package: datagridxlr
-Title: Shiny wrapper for datagridXL
+Package: dataGridsInShiny
+Title: Proofs of Concept for Data Grids in Shiny
 Version: 0.0.1
 Authors@R: 
     person("Michael", "Dewar", , "michael.p.dewar@gmail.com", role = c("aut", "cre"))
-Description: This package is a Shiny wrapper around the Javascript package `datagridXL`.
+Description: This package is a collection example Shiny apps that incorporate JavaScript data grids.  These sample apps are meant to demonstrate and evaluate various popular data grids.  Our philosophy is to keep the grid features in JS and only send to Shiny server on demand, ie when the user clicks 'Submit'.  This isn't actually a package so much as a project that occasionally uses reusable R code.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

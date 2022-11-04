@@ -1,73 +1,28 @@
 
-# datagridxlr
+# dataGridsInShiny
 
-<!-- badges: start -->
-<!-- badges: end -->
+The goal of dataGridsInShiny is to show how to use a selection of Javascript grid package in a Shiny app.  The packages we use are:
 
-The goal of datagridxlr is to show how to use the Javascript package [datagrdXL](https://www.datagridxl.com) in a Shiny app.  Mostly this is so I can practice what I learned in [JavaScript for R](https://book.javascript-for-r.com).
+- [datagrdXL](https://www.datagridxl.com),
 
-Because we don't actually want every cell change being sent back to the server, and because we don't want the user to lose their changes because the entire grid re-creates itself unexpectedly, we don't make the grid reactive.  That is, it is neither in `output$` nor `input$`.  The grid is controlled through an adhoc JS file that must be written for each app.  In other words, you must write JS to use this grid in your Shiny app.
+Our imagined use case is a Shiny developer that wants to provide the user with the ability to create, view, edit and delete data contained in a database table.  At the time of writing the Shiny code, the developer is able to specify the key details about the table such as the names of the columns, the datatypes of the columns, which columns are editable, and so on.  Typically the JS grid expects to receive these in JSON format when the grid is created, although sometimes you can use a JS method to modify on the fly.  The Shiny developer should prepare these options in a nested list structure that will automagically be converted to JSON.
+
+The JS grid will come with it's own methods and events.  The Shiny developer should use an adhoc JavaScript file to specify how they want to use these.  The main purpose of this repo is to provide JavaScript model code for a Shiny developer who may be inexperienced in JavaScript (like me).  A key concept is that the grid should handle things related to the grid.  Shiny should not be informed every time the user changes a cell.  Instead, add an HTML button with on `onClick` attribute the triggers JS code to update a Shiny input.  The grid should not participate in the reactive chain, except for when the user submits their changes, and when the table is initially created (at Shiny's request).
+
+
+An excellent resource is the free online book [JavaScript for R](https://book.javascript-for-r.com) by John Coene.  I learned how to do the techniques employed in Chapters 11 and 12.
 
 ## Installation
 
-You can install the development version of datagridxlr from [GitHub](https://github.com/) with:
+You can install the development version of dataGridsInShiny from [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("michael-dewar/datagridxlr")
+devtools::install_github("michael-dewar/dataGridsInShiny")
 ```
 
-## Example
+But it will be most useful for you to download a copy of the repo so that you can look at the code in the `inst` folder.
 
-This is a basic example which shows you how to solve a common problem:
+## How To Use This Package
 
-``` r
-library(shiny)
-
-addResourcePath("assets", system.file("example/nonreactive/assets", package = "datagridxlr"))
-
-ui <- fluidPage(
-	tags$head(tags$script(src= "assets/this_app.js")),
-	actionButton("create_grid_mtcars", "Create Grid with mtcars", class = "btn-primary"),
-	actionButton("create_grid_iris", "Create Grid with iris", class = "btn-primary"),
-	tags$button(class = "btn btn-primary",
-				onClick = "sendGridData()",
-				"Send Data to DT"),
-	datagridxlr::datagridxlUI(),
-	DT::DTOutput("dt")
-
-)
-
-server <- function(input, output, session) {
-	observe({
-		options <- list(rowHeaderLabelPrefix = "test ",
-						rowHeaderWidth = 300,
-						allowEditCells = FALSE)
-		session$sendCustomMessage(type = "create-grid",
-								  message = datagridxlr::datagridxl(mtcars, options))}) %>%
-		bindEvent(input$create_grid_mtcars)
-
-	observe({
-		session$sendCustomMessage(type = "create-grid",
-								  message = datagridxlr::datagridxl(iris))}) %>%
-		bindEvent(input$create_grid_iris)
-
-	output$dt <- DT::renderDT({
-		req(input$griddata)
-		input$griddata})
-}
-
-shinyApp(ui, server)
-```
-You also need the accompanying JS code:
-```
-var grid;
-
-Shiny.addCustomMessageHandler(type = "create-grid", function(message){
-	grid = new DataGridXL("datagrid", message);
-});
-
-sendGridData = function(){
-	Shiny.setInputValue('griddata:datagridxlr.griddata', grid.getData());
-};
-```
+Look at the example apps in the subfolders of `inst`.  Each grid type as its own example apps.

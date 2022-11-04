@@ -15,5 +15,5 @@ datagridxl(data, options = list())
 list
 }
 \description{
-See sample app in package for example: \code{system.file("example/nonreactive/app.R", package = "datagridxlr")}
+See sample app in package for example: \code{system.file("DataGridXL/nonreactive/app.R", package = "dataGridsInShiny")}
 }
