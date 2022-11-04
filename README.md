@@ -26,3 +26,4 @@ But it will be most useful for you to download a copy of the repo so that you ca
 ## How To Use This Package
 
 Look at the example apps in the subfolders of `inst`.  Each grid type has its own example apps.
+
