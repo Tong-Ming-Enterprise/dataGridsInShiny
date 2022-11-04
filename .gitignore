@@ -3,3 +3,6 @@
 .Rdata
 .httr-oauth
 .DS_Store
+
+# Local convenience copy of entire grid packages, no need to keep in repo
+inst/originals

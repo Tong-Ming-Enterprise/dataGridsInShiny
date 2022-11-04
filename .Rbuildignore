@@ -1,3 +1,5 @@
 ^dataGridsInShiny\.Rproj$
 ^\.Rproj\.user$
 ^LICENSE\.md$
+
+^inst/originals$
