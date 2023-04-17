@@ -21,6 +21,7 @@
         //var editedCell = []
 
         const editedBackgroundColor = 'cyan'
+        const errorBackgroundColor = 'red'
         const tableHeader = ["local_row_number", "po_row_id", "num_carton", "num_box", "num_bag", "num_piece", "supplier_pallet"];
         // Define column definitions
         const columnDefs = [
@@ -85,7 +86,7 @@
         function onCellValueChanged(event) {
           // Update the row data with the new value
           //console.log("onCellValueChanged")
-          //console.log(event)
+          console.log(event)
           editedRow.push(event.rowIndex)
           //console.log("edited "+editedRow)
           event.data[event.colDef.field] = event.newValue;
@@ -93,16 +94,47 @@
           //editedCell[event.rowIndex][tableHeader.indexOf(event.colDef.field)] = 1
           //console.log(editedCell)
 
-          // https://stackoverflow.com/questions/62222534/ag-grid-change-cell-color-on-cell-value-change
-          if (event.oldValue !== event.newValue) {
-            event.colDef.cellStyle = (p) =>
-            p.rowIndex.toString() === event.node.id ? {'background-color': editedBackgroundColor} : {};
+          // compare number aginst carton and pieces raise error if data is not valid
+          // bag needs to compare against carton
+          let errorFound = false
+          if (event.colDef.field == 'num_bag') {
+            if (Number(event.newValue) % event.data.num_carton != 0) {
+              errorFound = true
+              event.colDef.cellStyle = (p) =>
+                p.rowIndex.toString() === event.node.id ? {'background-color': errorBackgroundColor} : {};
 
-            event.api.refreshCells({
-              force: true,
-              columns: [event.column.getId()],
-              rowNodes: [event.node]
-            });
+                event.api.refreshCells({
+                  force: true,
+                  columns: [event.column.getId()],
+                  rowNodes: [event.node]
+                });
+            }
+          }
+          if (event.colDef.field == 'num_box') {
+            if (Number(event.newValue) % event.data.num_carton != 0) {
+              errorFound = true
+              event.colDef.cellStyle = (p) =>
+                p.rowIndex.toString() === event.node.id ? {'background-color': errorBackgroundColor} : {};
+
+                event.api.refreshCells({
+                  force: true,
+                  columns: [event.column.getId()],
+                  rowNodes: [event.node]
+                });
+            }
+          }
+          // https://stackoverflow.com/questions/62222534/ag-grid-change-cell-color-on-cell-value-change
+          if (!errorFound) {
+            if (event.oldValue !== event.newValue) {
+              event.colDef.cellStyle = (p) =>
+              p.rowIndex.toString() === event.node.id ? {'background-color': editedBackgroundColor} : {};
+
+              event.api.refreshCells({
+                force: true,
+                columns: [event.column.getId()],
+                rowNodes: [event.node]
+              });
+            }
           }
         }
 
