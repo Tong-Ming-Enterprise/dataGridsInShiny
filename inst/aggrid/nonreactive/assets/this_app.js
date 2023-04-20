@@ -1,0 +1,167 @@
+var aggrid
+
+Shiny.addCustomMessageHandler(type = "create-aggrid", function(gridOptions){
+	const gridContainer = document.querySelector("#grid-container");
+	console.log("in custom message handler")
+	console.log(gridOptions)
+    const gridOptions2 = {
+        columnDefs: columnDefs,
+        rowData: rowData,
+        rowSelection: "multiple",
+        onCellValueChanged: onCellValueChanged, // Attach cell value changed event handler
+        onRowSelected: onCellSelected
+    };
+	//gridOptions.data = gridOptions.rowData;
+	aggrid = new agGrid.Grid(gridContainer, gridOptions);
+});
+
+var editedRow = []
+// keep track of cell that has been updated. so we can keep track of which cell has been modified. but updating color still not
+//working yet
+//var editedCell = []
+
+const editedBackgroundColor = 'cyan'
+const errorBackgroundColor = 'red'
+const tableHeader = ["local_row_number", "po_row_id", "num_carton", "num_box", "num_bag", "num_piece", "supplier_pallet"];
+// Define column definitions
+const columnDefs = [
+    { headerName: "Row #", field: "local_row_number", checkboxSelection: true, width: 80 },
+    { headerName: "PO Row #", field: "po_row_id", width: 120 },
+    { headerName: "Carton", field: "num_carton", editable : true, singleClickEdit : true, width: 120 },
+    { headerName: "Box", field: "num_box", editable : true, singleClickEdit : true, width: 120 },
+    { headerName: "Bag", field: "num_bag", editable : true, singleClickEdit : true, width: 120 },
+    { headerName: "Piece", field: "num_piece", editable : true, singleClickEdit : true, width: 120 },
+    { headerName: "Supplier Pallet #", field: "supplier_pallet" }
+];
+
+// Define row data
+const rowData = [
+    { local_row_number: 1, po_row_id: 100, num_carton: 2, num_box: 0, num_bag: 0, num_piece: 1000, supplier_pallet: 1 },
+    { local_row_number: 2, po_row_id: 101, num_carton: 4, num_box: 0, num_bag: 0, num_piece: 2000, supplier_pallet: 1 },
+    { local_row_number: 3, po_row_id: 102, num_carton: 6, num_box: 0, num_bag: 0, num_piece: 3000, supplier_pallet: 2 },
+    { local_row_number: 4, po_row_id: 103, num_carton: 8, num_box: 0, num_bag: 0, num_piece: 4000, supplier_pallet: 2 },
+    { local_row_number: 5, po_row_id: 104, num_carton: 10, num_box: 0, num_bag: 0, num_piece: 5000, supplier_pallet: 3 },
+    { local_row_number: 6, po_row_id: 105, num_carton: 12, num_box: 0, num_bag: 48, num_piece: 6000, supplier_pallet: 5 },
+];
+
+// Grid options
+const gridOptions = {
+    columnDefs: columnDefs,
+    rowData: rowData,
+    rowSelection: "multiple",
+    onCellValueChanged: onCellValueChanged, // Attach cell value changed event handler
+    onRowSelected: onCellSelected
+};
+
+// Create ag-Grid table
+const gridContainer = document.querySelector("#grid-container");
+new agGrid.Grid(gridContainer, gridOptions);
+        // clear list after creation
+        // clear editedRow
+        editedRow = []
+
+        // Define cell selection handler
+        function onCellSelected(event) {
+          //console.log("onCellSelected")
+          //console.log(event)
+          //console.log(editedCell)
+          // go thru each node and if its in editedRow select the row
+          gridOptions.api.forEachNode(function(node) {
+              //console.log(node)
+              if (editedRow.includes(node.rowIndex)) {
+                  //console.log("selecting"+node.rowIndex)
+                  //console.log(node)
+                  node.setSelected(true)
+              }
+          });
+          // if checkbox selected we need to set it
+          if (event.source == "checkboxSelected") {
+            //console.log("checkboxSelected")
+            editedRow.push(event.rowIndex)
+            //editedCell[event.rowIndex][0] = 1
+          }
+        }
+
+        // Define cell value changed event handler
+        function onCellValueChanged(event) {
+          // Update the row data with the new value
+          //console.log("onCellValueChanged")
+          console.log(event)
+          editedRow.push(event.rowIndex)
+          //console.log("edited "+editedRow)
+          event.data[event.colDef.field] = event.newValue;
+          //console.log(event.colDef.field)
+          //editedCell[event.rowIndex][tableHeader.indexOf(event.colDef.field)] = 1
+          //console.log(editedCell)
+
+          // compare number aginst carton and pieces raise error if data is not valid
+          // bag needs to compare against carton
+          let errorFound = false
+          if (event.colDef.field == 'num_bag') {
+            if (Number(event.newValue) % event.data.num_carton != 0) {
+              errorFound = true
+              event.colDef.cellStyle = (p) =>
+                p.rowIndex.toString() === event.node.id ? {'background-color': errorBackgroundColor} : {};
+
+                event.api.refreshCells({
+                  force: true,
+                  columns: [event.column.getId()],
+                  rowNodes: [event.node]
+                });
+            }
+          }
+          if (event.colDef.field == 'num_box') {
+            if (Number(event.newValue) % event.data.num_carton != 0) {
+              errorFound = true
+              event.colDef.cellStyle = (p) =>
+                p.rowIndex.toString() === event.node.id ? {'background-color': errorBackgroundColor} : {};
+
+                event.api.refreshCells({
+                  force: true,
+                  columns: [event.column.getId()],
+                  rowNodes: [event.node]
+                });
+            }
+          }
+          // https://stackoverflow.com/questions/62222534/ag-grid-change-cell-color-on-cell-value-change
+          if (!errorFound) {
+            if (event.oldValue !== event.newValue) {
+              event.colDef.cellStyle = (p) =>
+              p.rowIndex.toString() === event.node.id ? {'background-color': editedBackgroundColor} : {};
+
+              event.api.refreshCells({
+                force: true,
+                columns: [event.column.getId()],
+                rowNodes: [event.node]
+              });
+            }
+          }
+        }
+
+        // handle output button click
+        function handleClick() {
+          console.log("exporting")
+          let items = [];
+          gridOptions.api.forEachNode(function(node) {
+              console.log(node.rowIndex)
+              if (editedRow.includes(node.rowIndex)) {
+                  console.log("edited"+node.rowIndex)
+                  items.push(node.data);
+              }
+          });
+          console.log(items)
+          //const data = gridOptions.api.getSelectedNodes(); // or api.getDataAsExcel() for Excel format
+          //console.log(data)
+          const data2 = gridOptions.api.getSelectedRows(); // or api.getDataAsExcel() for Excel format
+          console.log(data2)
+          // loop thru editedRow and create new data from it?
+
+          alert('Button clicked!');
+        }
+
+        // Attach event listener to the button element
+        document.addEventListener('DOMContentLoaded', function () {
+          // Wait for the DOM to load
+          const button = document.getElementById('exportButton');
+          button.addEventListener('click', handleClick);
+        });
