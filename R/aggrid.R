@@ -38,9 +38,9 @@ aggridUI <- function(id = "grid-container", width = "100%", height = "400px"){
 	# Create basic html tag
 	style <- htmltools::css(width = htmltools::validateCssUnit(width), height = htmltools::validateCssUnit(height))
 	args <- list(id = id,
-				 class = "aggridr",
+				 class = "ag-theme-alpine",     #<- this is the css theme ag-theme-alpine
 				 style = style)
-	grid <-do.call(htmltools::div, args)
+	grid <-do.call(htmltools::div, args)		#<- this is creating the div container for aggrid
 
 	# Prepare dependency
 	path <- system.file("aggrid", package = "dataGridsInShiny")
@@ -48,7 +48,14 @@ aggridUI <- function(id = "grid-container", width = "100%", height = "400px"){
 		name = "ag-grid-community",
 		version = "28.2.1",
 		src = c(file = path),
-		script = c("ag-grid-community.min.js")
+		script = c("ag-grid-community.min.js"),
+		# for some reason unpkg.com url from index.html give 404 error but this link is ok ???
+		#head = HTML('<link rel="stylesheet" href="https://unpkg.com/ag-grid-community@latest/dist/styles/ag-grid.min.css">
+		#			 <link rel="stylesheet" href="https://unpkg.com/ag-grid-community@latest/dist/styles/ag-theme-alpine.min.css">')
+		#head = HTML('<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@29.2.0/styles/ag-grid.css">
+        #             <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@latest/styles/ag-theme-alpine.min.css">')
+		head = HTML('<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@29.2.0/styles/ag-grid.css">
+		             <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@latest/styles/ag-theme-alpine.min.css">')
 	)
 
 	# Attach dependency and return
@@ -67,6 +74,7 @@ aggridUI <- function(id = "grid-container", width = "100%", height = "400px"){
 #' @export
 
 aggrid_output_handler <- function(data, ...){
+	browser()
 	purrr::map_dfr(data, as.data.frame)
 }
 
