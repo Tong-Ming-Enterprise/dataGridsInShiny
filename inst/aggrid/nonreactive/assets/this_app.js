@@ -1,19 +1,61 @@
 var aggrid
+var gridOptions
 
-Shiny.addCustomMessageHandler(type = "create-aggrid", function(gridOptions){
-	const gridContainer = document.querySelector("#grid-container");
+//var columnDefs = []
+//var rowData = []
+// Grid options
+//var gridOptions2 = {
+//    columnDefs: columnDefs,
+//    rowData: rowData,
+//    rowSelection: "multiple",
+//    onCellValueChanged: onCellValueChanged, // Attach cell value changed event handler
+//    onRowSelected: onCellSelected
+//};
+
+// type must match calling .R session$sendCustomMessage(type = "create-aggrid",
+Shiny.addCustomMessageHandler(type = "create-aggrid", function(rgridOptions){
+	console.log(type)
+	const gridContainer = document.querySelector("#aggrid-container");
 	console.log("in custom message handler")
+	// gridOptions pass infrom R
+	gridOptions = rgridOptions
+
 	console.log(gridOptions)
-    const gridOptions2 = {
-        columnDefs: columnDefs,
-        rowData: rowData,
-        rowSelection: "multiple",
-        onCellValueChanged: onCellValueChanged, // Attach cell value changed event handler
-        onRowSelected: onCellSelected
-    };
 	//gridOptions.data = gridOptions.rowData;
 	aggrid = new agGrid.Grid(gridContainer, gridOptions);
+	console.log(aggrid)
 });
+
+// Note: we should really use grid.events.on('change', sendChangeEvent), but even
+// though the documentation says this event exists, when I try to use it nothing happens.
+// In a full app, I would thus probably need to subscribe to more than simply 'setchangevalues'.
+
+function sendChangeEvent(gridEvent){
+	console.log("change!");
+	Shiny.setInputValue('unsaved_changes', true);
+
+	var unsaved_warning_button = document.getElementById("unsaved_warning_button");
+	unsaved_warning_button.style.visibility = "visible";
+
+	grid.events.off('setcellvalues', sendChangeEvent); // only need to send first event
+}
+
+function sendGridData(){
+	console.log("sendGrdData")
+	console.log(gridOptions)
+	console.log(aggrid)
+//	gridOptions.api.forEachNode((rowNode, index) => {
+//                    console.log('node ' + index + ' is in the grid');
+//                  });
+	//Shiny.setInputVailue('griddata:datagridxlr.griddata', grid.getData());
+	Shiny.setInputValue('unsaved_changes', false);
+
+	var unsaved_warning_button = document.getElementById("unsaved_warning_button");
+	unsaved_warning_button.style.visibility = "hidden";
+
+	//aggrid.events.on('setcellvalues', sendChangeEvent); // start listening for changes again
+
+}
 
 var editedRow = []
 // keep track of cell that has been updated. so we can keep track of which cell has been modified. but updating color still not
@@ -24,38 +66,13 @@ const editedBackgroundColor = 'cyan'
 const errorBackgroundColor = 'red'
 const tableHeader = ["local_row_number", "po_row_id", "num_carton", "num_box", "num_bag", "num_piece", "supplier_pallet"];
 // Define column definitions
-const columnDefs = [
-    { headerName: "Row #", field: "local_row_number", checkboxSelection: true, width: 80 },
-    { headerName: "PO Row #", field: "po_row_id", width: 120 },
-    { headerName: "Carton", field: "num_carton", editable : true, singleClickEdit : true, width: 120 },
-    { headerName: "Box", field: "num_box", editable : true, singleClickEdit : true, width: 120 },
-    { headerName: "Bag", field: "num_bag", editable : true, singleClickEdit : true, width: 120 },
-    { headerName: "Piece", field: "num_piece", editable : true, singleClickEdit : true, width: 120 },
-    { headerName: "Supplier Pallet #", field: "supplier_pallet" }
-];
 
-// Define row data
-const rowData = [
-    { local_row_number: 1, po_row_id: 100, num_carton: 2, num_box: 0, num_bag: 0, num_piece: 1000, supplier_pallet: 1 },
-    { local_row_number: 2, po_row_id: 101, num_carton: 4, num_box: 0, num_bag: 0, num_piece: 2000, supplier_pallet: 1 },
-    { local_row_number: 3, po_row_id: 102, num_carton: 6, num_box: 0, num_bag: 0, num_piece: 3000, supplier_pallet: 2 },
-    { local_row_number: 4, po_row_id: 103, num_carton: 8, num_box: 0, num_bag: 0, num_piece: 4000, supplier_pallet: 2 },
-    { local_row_number: 5, po_row_id: 104, num_carton: 10, num_box: 0, num_bag: 0, num_piece: 5000, supplier_pallet: 3 },
-    { local_row_number: 6, po_row_id: 105, num_carton: 12, num_box: 0, num_bag: 48, num_piece: 6000, supplier_pallet: 5 },
-];
-
-// Grid options
-const gridOptions = {
-    columnDefs: columnDefs,
-    rowData: rowData,
-    rowSelection: "multiple",
-    onCellValueChanged: onCellValueChanged, // Attach cell value changed event handler
-    onRowSelected: onCellSelected
-};
 
 // Create ag-Grid table
 const gridContainer = document.querySelector("#grid-container");
-new agGrid.Grid(gridContainer, gridOptions);
+//aggrid
+console.log("calling new here")
+//aggrid = new agGrid.Grid(gridContainer, gridOptions2);
         // clear list after creation
         // clear editedRow
         editedRow = []
