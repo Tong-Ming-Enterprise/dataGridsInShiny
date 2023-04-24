@@ -1,6 +1,7 @@
 library(shiny)
+devtools::load_all(".")
 
-addResourcePath("assets", system.file("DataGridXL/nonreactive/assets", package = "dataGridsInShiny"))
+addResourcePath("assets", system.file("DataGridXL","nonreactive","assets", package = "dataGridsInShiny"))
 
 ui <- fluidPage(
 	tags$head(tags$script(src= "assets/this_app.js")),
