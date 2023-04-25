@@ -12,13 +12,39 @@ var gridOptions
 //    onRowSelected: onCellSelected
 //};
 
+// Define cell selection handler
+function onCellSelected(event) {
+  console.log("onCellSelected")
+  console.log(event)
+  //console.log(editedCell)
+  // go thru each node and if its in editedRow select the row
+  gridOptions.api.forEachNode(function(node) {
+      //console.log(node)
+      if (editedRow.includes(node.rowIndex)) {
+          //console.log("selecting"+node.rowIndex)
+          console.log(node)
+          node.setSelected(true)
+      }
+  });
+  // if checkbox selected we need to set it
+  if (event.source == "checkboxSelected") {
+    //console.log("checkboxSelected")
+    editedRow.push(event.rowIndex)
+    //editedCell[event.rowIndex][0] = 1
+  }
+}
+
+// this is where the AG-Grid is created in javascript
 // type must match calling .R session$sendCustomMessage(type = "create-aggrid",
 Shiny.addCustomMessageHandler(type = "create-aggrid", function(rgridOptions){
 	console.log(type)
 	const gridContainer = document.querySelector("#aggrid-container");
 	console.log("in custom message handler")
 	// gridOptions pass infrom R
+	// adding javascript function event callback
 	gridOptions = rgridOptions
+	gridOptions.onCellValueChanged = onCellValueChanged
+	gridOptions.onRowSelected = onCellSelected
 
 	console.log(gridOptions)
 	//gridOptions.data = gridOptions.rowData;
@@ -40,14 +66,20 @@ function sendChangeEvent(gridEvent){
 	grid.events.off('setcellvalues', sendChangeEvent); // only need to send first event
 }
 
+
 function sendGridData(){
 	console.log("sendGrdData")
 	console.log(gridOptions)
 	console.log(aggrid)
-//	gridOptions.api.forEachNode((rowNode, index) => {
-//                    console.log('node ' + index + ' is in the grid');
-//                  });
-	//Shiny.setInputVailue('griddata:datagridxlr.griddata', grid.getData());
+	outData = []
+	gridOptions.api.forEachNode((rowNode, index) => {
+		outData.push(rowNode.data)
+                    console.log('node ' + index + ' is in the grid');
+                    console.log(rowNode.data)
+    });
+    console.log(outData)
+	// https://shiny.rstudio.com/articles/communicating-with-js.html
+	Shiny.setInputValue('griddata:aggrid.griddata', outData);
 	Shiny.setInputValue('unsaved_changes', false);
 
 	var unsaved_warning_button = document.getElementById("unsaved_warning_button");
@@ -77,27 +109,6 @@ console.log("calling new here")
         // clear editedRow
         editedRow = []
 
-        // Define cell selection handler
-        function onCellSelected(event) {
-          //console.log("onCellSelected")
-          //console.log(event)
-          //console.log(editedCell)
-          // go thru each node and if its in editedRow select the row
-          gridOptions.api.forEachNode(function(node) {
-              //console.log(node)
-              if (editedRow.includes(node.rowIndex)) {
-                  //console.log("selecting"+node.rowIndex)
-                  //console.log(node)
-                  node.setSelected(true)
-              }
-          });
-          // if checkbox selected we need to set it
-          if (event.source == "checkboxSelected") {
-            //console.log("checkboxSelected")
-            editedRow.push(event.rowIndex)
-            //editedCell[event.rowIndex][0] = 1
-          }
-        }
 
         // Define cell value changed event handler
         function onCellValueChanged(event) {
@@ -176,9 +187,3 @@ console.log("calling new here")
           alert('Button clicked!');
         }
 
-        // Attach event listener to the button element
-        document.addEventListener('DOMContentLoaded', function () {
-          // Wait for the DOM to load
-          const button = document.getElementById('exportButton');
-          button.addEventListener('click', handleClick);
-        });
