@@ -1,38 +1,35 @@
+# call by server in /inst/aggrid/nonreactive/app.R server
+# to send a customMessage that will be handle by javascript handler in /inst/aggrid/nonreactive/assets/this_app.js
+# dataGridsInShiny::aggrid(gridOptions)
 
-#' Prepare Data and Options for ag-grid
+#' Prepare Data and gridOptions for ag-grid
 #'
 #' See sample app in package for example: `system.file("aggrid/nonreactive/app.R", package = "dataGridsInShiny")`
 #'
-#' @param options list of options according to ag-grid documentation
+#' @param options list of options according to ag-grid documentation with rowData as part of the structure
 #'
 #' @return list
 #' @export
 
 aggrid <- function(options = list()){
 	stopifnot(is.list(options))
-
-	#browser()
-	# Drop row names because these seem to cause problems
-	#rownames(data) <- NULL
-	data <- options$rowData
-
-	# Convert data.frame to rowwise list
-	#data <- apply(options$rowData, 1, as.list)
-
-	# Add options to this list...
-	c(list(data = data), options)
+	# no format massaging for ag-grid so just return the options as it was pass it. other package might need more work.
+	options
 }
 
+# called by UI in /inst/aggrid/nonreactive/app.R
+# sample call dataGridsInShiny::aggridUI('aggrid-container')
+# css theme link added here below
 
-#' Prepare UI tag and Dependency for Grid.
+#' Prepare UI tag and Dependency for agGrid.
 #'
-#' @param id This is used exactly once, in the JavaScript creating the grid
+#' @param id This is used exactly once, in the JavaScript creating the grid. its a div label
 #' @param width The width of the input, e.g. `400px`, or `100%`; see `htmltools::validateCssUnit()`.
 #' @param height The height of the input, e.g. `400px`, or `100%`; see `htmltools::validateCssUnit()`.
 #'
 #' @return Placeholder HTML for grid.
 #' @export
-aggridUI <- function(id = "grid-container", width = "100%", height = "400px"){
+aggridUI <- function(id = "aggrid-container", width = "100%", height = "400px"){
 
 	#browser()
 	# Create basic html tag
@@ -72,9 +69,8 @@ aggridUI <- function(id = "grid-container", width = "100%", height = "400px"){
 #'
 #' @return a data.frame
 #' @export
-
+# this has to be declare in zzz.R
 aggrid_output_handler <- function(data, ...){
-	browser()
 	purrr::map_dfr(data, as.data.frame)
 }
 
