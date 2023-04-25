@@ -21,6 +21,7 @@ function sendChangeEvent(gridEvent){
 }
 
 function sendGridData(){
+	console.log(grid.getData())
 	Shiny.setInputValue('griddata:datagridxlr.griddata', grid.getData());
 	Shiny.setInputValue('unsaved_changes', false);
 
