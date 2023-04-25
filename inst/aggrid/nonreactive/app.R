@@ -32,7 +32,7 @@ server <- function(input, output, session) {
 	columnDefs <- list(
 		list(headerName = "Row #", field = "local_row_number", checkboxSelection = TRUE, width = 80),
 		list(headerName = "PO", field = "po_row_id", width = 120),
-		list(headerName = "Carton", field = "num_carton", editable = TRUE, singleClickEdit = TRUE, width = 120),
+		list(headerName = "Carton", field = "num_carton", editable = TRUE, type = 'numericColumn', singleClickEdit = TRUE, width = 120),
 		list(headerName = "Box", field = "num_box", editable = TRUE, singleClickEdit = TRUE, width = 120),
 		list(headerName = "Bag", field = "num_bag", editable = TRUE, singleClickEdit = TRUE, width = 120),
 		list(headerName = "Piece", field = "num_piece", editable = TRUE, singleClickEdit = TRUE, width = 120),
@@ -71,8 +71,8 @@ server <- function(input, output, session) {
 		bindEvent(input$create_grid_iris)
 
 	output$dt <- DT::renderDT({
-		req(input$griddata)
-		input$griddata})
+		req(input$griddata2)
+		input$griddata2})
 
 	# output$unsaved_warning <- shiny::renderText({
 	# 	req(input$unsaved_changes)
