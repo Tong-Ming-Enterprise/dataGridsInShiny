@@ -5,9 +5,10 @@ addResourcePath("assets", system.file("aggrid","nonreactive","assets", package =
 
 ui <- fluidPage(
 	tags$head(tags$script(src= "assets/this_app.js")),
-	actionButton("create_grid_mtcars", "Create ag-Grid with custom", class = "btn-primary"),
+	# create_custom_aggrid is trigger in the server
+	actionButton("create_custom_aggrid", "Create custom ag-Grid", class = "btn-primary"),
 	tags$button(class = "btn btn-primary",
-				onClick = "sendGridData()",
+				onClick = "sendGridData()",       #this javascript function is found in this_app.js link in tag above
 				"Send Data to DT"),
 	tags$button(class = "btn btn-danger",
 				id = "unsaved_warning_button",
@@ -45,10 +46,11 @@ server <- function(input, output, session) {
 			rowData = rowData,
 			rowSelection = "multiple"
 		)
-		# send custom message to JS
+		# send custom message to JS.
+		# the columnDef, gridOptions and data are sent to javascript
 		session$sendCustomMessage(type = "create-aggrid",
 								  message = dataGridsInShiny::aggrid(gridOptions))}) %>%
-		bindEvent(input$create_grid_mtcars)
+		bindEvent(input$create_custom_aggrid)
 
 	observe({
 		options <- list(singleClickEdit = TRUE)
