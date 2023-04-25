@@ -29,6 +29,9 @@ server <- function(input, output, session) {
 		list( local_row_number = 5, po_row_id = 104, num_carton = 10, num_box = 0, num_bag = 0, num_piece = 5000, supplier_pallet = 3 ),
 		list( local_row_number = 6, po_row_id = 105, num_carton = 12, num_box = 0, num_bag = 48, num_piece = 6000, supplier_pallet = 5 )
 	)
+
+	# type = 'numericColumn' still return char when cell has been edited MYL 04-25-2023
+
 	columnDefs <- list(
 		list(headerName = "Row #", field = "local_row_number", checkboxSelection = TRUE, width = 80),
 		list(headerName = "PO", field = "po_row_id", width = 120),
