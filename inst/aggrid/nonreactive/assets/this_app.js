@@ -1,6 +1,6 @@
 var aggrid
 var gridOptions
-
+showCol = false
 editedRow = []
 
 const editedBackgroundColor = 'cyan'
@@ -35,6 +35,11 @@ function numberParser(params) {
   return Number(params.newValue);
 }
 
+// Three step to add custom CheckboxRenderer to a column
+// 1. declare CheckboxRenderer
+// 2. assigned checkboxRenderer to the columnDefs
+// 3. add CheckboxRenderer to gridOptions
+//----------------------- CheckboxRenderer --------------------------------------------
 //https://blog.ag-grid.com/binding-boolean-values-to-checkboxes-in-ag-grid/
 function CheckboxRenderer() {}
 
@@ -62,6 +67,119 @@ CheckboxRenderer.prototype.getGui = function(params) {
 CheckboxRenderer.prototype.destroy = function(params) {
   this.eGui.removeEventListener('click', this.checkedHandler);
 }
+//----------------------- CheckboxRenderer --------------------------------------------
+
+//-------------------------------------------------------------------------------------
+class CustomDateComponent {
+   init(params) {
+       const template = `
+           <input type="text" data-input style="width: 100%;" />
+           <a class="input-button" title="clear" data-clear>
+               <i class="fa fa-times"></i> </a>`;
+
+       this.params = params;
+
+       this.eGui = document.createElement('div');
+       this.eGui.setAttribute('role', 'presentation');
+       this.eGui.classList.add('ag-input-wrapper');
+       this.eGui.classList.add('custom-date-filter');
+       this.eGui.innerHTML = template;
+
+       this.eInput = this.eGui.querySelector('input');
+
+       this.picker = flatpickr(this.eGui, {
+           onChange: this.onDateChanged.bind(this),
+           dateFormat: 'd/m/Y',
+           wrap: true
+       });
+
+       this.picker.calendarContainer.classList.add('ag-custom-component-popup');
+
+       this.date = null;
+   }
+
+   getGui() {
+       return this.eGui;
+   }
+
+   onDateChanged(selectedDates) {
+       this.date = selectedDates[0] || null;
+       this.params.onDateChanged();
+   }
+
+   getDate() {
+       return this.date;
+   }
+
+   setDate(date) {
+       this.picker.setDate(date);
+       this.date = date;
+   }
+
+   setInputPlaceholder(placeholder) {
+       this.eInput.setAttribute('placeholder', placeholder);
+   }
+}
+class DatePicker {
+  // gets called once before the renderer is used
+  init(params) {
+    // create the cell
+    this.eInput = document.createElement('input');
+    this.eInput.value = params.value;
+    this.eInput.classList.add('ag-input');
+    this.eInput.style.height = '100%';
+
+
+    // https://jqueryui.com/datepicker/
+    $(this.eInput).datepicker({
+      dateFormat: 'dd/mm/yy',
+      onSelect: () => {
+        this.eInput.focus();
+      },
+    });
+  }
+
+  // gets called once when grid ready to insert the element
+  getGui() {
+    return this.eInput;
+  }
+  // focus and select can be done after the gui is attached
+  afterGuiAttached() {
+    this.eInput.focus();
+    this.eInput.select();
+  }
+
+  // returns the new value after editing
+  getValue() {
+    return this.eInput.value;
+  }
+
+}
+function getDatePicker() {
+  function Datepicker() {}
+  Datepicker.prototype.init = function(params) {
+    this.eInput = document.createElement("input");
+    this.eInput.value = params.value;
+    $(this.eInput).datepicker({ dateFormat: "dd/mm/yy" });
+  };
+  Datepicker.prototype.getGui = function() {
+    return this.eInput;
+  };
+  Datepicker.prototype.afterGuiAttached = function() {
+    this.eInput.focus();
+    this.eInput.select();
+  };
+  Datepicker.prototype.getValue = function() {
+    return this.eInput.value;
+  };
+  Datepicker.prototype.destroy = function() {};
+  Datepicker.prototype.isPopup = function() {
+    return false;
+  };
+  return Datepicker;
+}
+//-------------------------------------------------------------------------------------
+
 
 // this is where the AG-Grid is created using javascript
 // type must match calling .R session$sendCustomMessage(type = "create-aggrid",
@@ -83,14 +201,17 @@ Shiny.addCustomMessageHandler(type = "create-aggrid-receiving", function(rgridOp
 	newcolDef[5].valueParser = numberParser
 	// https://www.ag-grid.com/javascript-data-grid/value-setters/
 
+	// 2. assigned checkboxRenderer to the columnDefs
 	// from https://blog.ag-grid.com/binding-boolean-values-to-checkboxes-in-ag-grid/
 	newcolDef[8].cellRenderer = 'checkboxRenderer'
 
 	gridOptions.columnDefs = newcolDef
 
+	// 3. add CheckboxRenderer to gridOptions
 	// from https://blog.ag-grid.com/binding-boolean-values-to-checkboxes-in-ag-grid/
 	gridOptions.components = {
 		checkboxRenderer: CheckboxRenderer
+		//agDateInput: getDatePicker
 	}
 	//gridOptions.data = gridOptions.rowData;
 	aggrid = new agGrid.Grid(gridContainer, gridOptions);
@@ -120,6 +241,17 @@ Shiny.addCustomMessageHandler(type = "create-aggrid", function(rgridOptions){
 	//gridOptions.data = gridOptions.rowData;
 	aggrid = new agGrid.Grid(gridContainer, gridOptions);
 	//console.log(aggrid)
+});
+
+
+Shiny.addCustomMessageHandler(type = "hide_column", function(colList){
+	console.log(colList)
+	// loop thru list
+	colList.forEach((acol) => {
+		console.log(showCol?"Show ":"Hide "+acol)
+		gridOptions.columnApi.setColumnVisible(acol, showCol)
+	})
+	showCol = !showCol
 });
 
 // Note: we should really use grid.events.on('change', sendChangeEvent), but even
