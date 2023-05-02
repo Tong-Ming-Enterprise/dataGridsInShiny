@@ -61,7 +61,7 @@ aggridUI <- function(id = "aggrid-container", width = "100%", height = "400px"){
 
 #' Data Grid Output Handler
 #'
-#' Transform exported data into data.frame.
+#' Transform exported data into data.frame. Convert null and NaN to NA_integer_ or dataFrame will not like it
 #'
 #'
 #' @param data the JSON data
@@ -69,21 +69,27 @@ aggridUI <- function(id = "aggrid-container", width = "100%", height = "400px"){
 #'
 #' @return a data.frame
 #' @export
-# this has to be declare in zzz.R
+# this has to be declare in /R/zzz.R
 aggrid_output_handler <- function(data, ...){
-	#print(data[[1]])
-	list1 <- list("num_box","num_bag","num_carton")
-	for (l1 in data) {
-		for (name in names(l1)) {
-			if (is.null(l1[[name]]) && name %in% list1) {
-				print(name)
-				print(l1[[name]])
-				l1[[name]] = 0
+	# list of field name to check for non integer
+	listInt <- list("num_box","num_bag","num_carton","num_piece")
+	#https://stackoverflow.com/questions/13450360/how-to-validate-date-in-r#:~:text=Simple%20way%3A,%27t%20correct!%22)%20%7D
+	listDate <- list("p_date")
+	listChar <- list("note")
+	if (length(data)) {
+		for (i in 1:length(data)) {
+			for (name in names(data[[i]])) {
+				# need to check both null and NaN
+				if ((is.null(data[[i]][[name]]) || (is.nan(data[[i]][[name]]))) && (name %in% listInt)) {
+					print(name)
+					print(data[[i]][[name]])
+					data[[i]][[name]] = NA_integer_
+				}
+
 			}
 		}
 	}
-	#browser()
-	#data needs to be transform to int if necessary
+
 	purrr::map_dfr(data, as.data.frame)
 }
 
