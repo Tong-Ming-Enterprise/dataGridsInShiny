@@ -15,5 +15,5 @@ aggrid_output_handler(data, ...)
 a data.frame
 }
 \description{
-Transform exported data into data.frame.
+Transform exported data into data.frame. Convert null and Nan to 0 or dataFrame will not like it
 }

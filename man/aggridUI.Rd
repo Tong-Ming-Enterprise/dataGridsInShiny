@@ -2,12 +2,12 @@
 % Please edit documentation in R/aggrid.R
 \name{aggridUI}
 \alias{aggridUI}
-\title{Prepare UI tag and Dependency for Grid.}
+\title{Prepare UI tag and Dependency for agGrid.}
 \usage{
-aggridUI(id = "grid-container", width = "100\%", height = "400px")
+aggridUI(id = "aggrid-container", width = "100\%", height = "400px")
 }
 \arguments{
-\item{id}{This is used exactly once, in the JavaScript creating the grid}
+\item{id}{This is used exactly once, in the JavaScript creating the grid. its a div label}
 
 \item{width}{The width of the input, e.g. \verb{400px}, or \verb{100\%}; see \code{htmltools::validateCssUnit()}.}
 
@@ -17,5 +17,5 @@ aggridUI(id = "grid-container", width = "100\%", height = "400px")
 Placeholder HTML for grid.
 }
 \description{
-Prepare UI tag and Dependency for Grid.
+Prepare UI tag and Dependency for agGrid.
 }

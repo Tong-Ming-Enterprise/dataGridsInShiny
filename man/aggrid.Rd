@@ -2,16 +2,16 @@
 % Please edit documentation in R/aggrid.R
 \name{aggrid}
 \alias{aggrid}
-\title{Prepare Data and Options for ag-grid}
+\title{Prepare Data and gridOptions for ag-grid}
 \usage{
 aggrid(options = list())
 }
 \arguments{
-\item{options}{list of options according to ag-grid documentation}
+\item{options}{list of options according to ag-grid documentation with rowData as part of the structure}
 }
 \value{
 list
 }
 \description{
-See sample app in package for example: \code{system.file("aggrid/nonreactive/app.R", package = "dataGridsInShiny")}
+See sample app in package for example: \code{system.file("aggrid/nonreactive/app.R", package = "dataGridsInShiny", "done")}
 }
