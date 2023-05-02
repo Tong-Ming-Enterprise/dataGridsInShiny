@@ -292,11 +292,11 @@ function sendGridData(){
     console.log(outData)
 	// https://shiny.rstudio.com/articles/communicating-with-js.html
 	// https://book.javascript-for-r.com/shiny-complete.html  chapter 12.8
-	// variableName:inputHandlerName. variableName is griddata2 and inputHandler is defined in zzz.R call aggrid.griddata
-	Shiny.setInputValue('griddata2:aggrid.griddata', outData);
+	// variableName:inputHandlerName. variableName is griddata2 and inputHandler is defined in /R/zzz.R call aggrid.griddata
+	Shiny.setInputValue('griddata2:aggrid_griddata', outData);
 
 	console.log(selRow)
-	Shiny.setInputValue('griddata3:aggrid.griddata', selRow);
+	Shiny.setInputValue('griddata3:aggrid_griddata', selRow);
 
 	Shiny.setInputValue('unsaved_changes', false);
 

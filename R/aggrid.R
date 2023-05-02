@@ -4,7 +4,7 @@
 
 #' Prepare Data and gridOptions for ag-grid
 #'
-#' See sample app in package for example: `system.file("aggrid/nonreactive/app.R", package = "dataGridsInShiny")`
+#' See sample app in package for example: `system.file("aggrid/nonreactive/app.R", package = "dataGridsInShiny", "done")`
 #'
 #' @param options list of options according to ag-grid documentation with rowData as part of the structure
 #'
@@ -71,6 +71,19 @@ aggridUI <- function(id = "aggrid-container", width = "100%", height = "400px"){
 #' @export
 # this has to be declare in zzz.R
 aggrid_output_handler <- function(data, ...){
+	#print(data[[1]])
+	list1 <- list("num_box","num_bag","num_carton")
+	for (l1 in data) {
+		for (name in names(l1)) {
+			if (is.null(l1[[name]]) && name %in% list1) {
+				print(name)
+				print(l1[[name]])
+				l1[[name]] = 0
+			}
+		}
+	}
+	#browser()
+	#data needs to be transform to int if necessary
 	purrr::map_dfr(data, as.data.frame)
 }
 
