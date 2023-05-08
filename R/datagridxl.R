@@ -66,7 +66,6 @@ datagridxlUI <- function(id = "datagrid", width = "100%", height = "400px"){
 #' @export
 
 datagridxl_output_handler <- function(data, ...){
-	browser()
 	purrr::map_dfr(data, as.data.frame)
 }
 
