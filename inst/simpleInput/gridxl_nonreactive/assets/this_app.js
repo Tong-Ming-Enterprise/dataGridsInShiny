@@ -12,12 +12,12 @@ Shiny.addCustomMessageHandler(type = "create-grid", function(message){
 
 function sendChangeEvent(gridEvent){
 	console.log("change!");
-	Shiny.setInputValue('unsaved_changes', true);
+	//Shiny.setInputValue('unsaved_changes', true);
 
-	var unsaved_warning_button = document.getElementById("unsaved_warning_button");
-	unsaved_warning_button.style.visibility = "visible";
+	//var unsaved_warning_button = document.getElementById("unsaved_warning_button");
+	//unsaved_warning_button.style.visibility = "visible";
 
-	grid.events.off('setcellvalues', sendChangeEvent); // only need to send first event
+	//grid.events.off('setcellvalues', sendChangeEvent); // only need to send first event
 }
 
 function sendGridXLData(){
