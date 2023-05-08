@@ -61,7 +61,7 @@ sampledf <- data.frame(
 	pallet_id = c(81,82,83,84,85,86,87,88,89,90),
 	incoming_shipment_id = c(21, 21, 21, 21, 21, 21, 21, 21, 21, 21),
 	old_location = c("收貨區","收貨區","收貨區","收貨區","收貨區","收貨區","收貨區","收貨區","收貨區","收貨區"),
-	new_location = c(0, 0, 0, 0, 0, 0, 0, 16, 18, 0),
+	new_location = c("0", "0", "0", "0", "0", "0", "0", "16", "18", "0"),
 	note = c("1","1","1","1","1","1","1","1","1","1")
 )
 sampledf2 <- data.frame(
@@ -69,21 +69,22 @@ sampledf2 <- data.frame(
 	pallet_id = c(91,92,93,94,95,96,97,98,99,100),
 	incoming_shipment_id = c(44, 44, 44, 44, 44, 44, 44, 44, 44, 44),
 	old_location = c("收貨區","收貨區","收貨區","收貨區","收貨區","收貨區","收貨區","收貨區","收貨區","收貨區"),
-	new_location = c(2, 4, 6, 0, 0, 0, 0, 16, 18, 0),
+	new_location = c("2", "4", "6", "0", "0", "0", "0", "16", "18", "0"),
 	note = c("1","1","1","1","1","1","1","1","1","1")
 )
-
+# this is a sample blank page with some prefilled column
+emptydf <- data.frame(
+	local_row_number = NA,
+	pallet_id = NA,
+	incoming_shipment_id = NA,
+	old_location = NA,
+	new_location = NA,
+	note = NA
+)
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
 
-	# this is a sample blank page with some prefilled column
-	emptydf <- data.frame(
-		local_row_number = c(1,2,3,4,5,6,7),
-		incoming_shipment_id = c(4100, 4101, 4102, 4103, 4104, 4105, 4106),
-		old_location = c("2023-04-20","2023-04-20","2023-04-20","2023-04-20","2023-04-20","2023-04-20","2023-04-20"),
-		new_location = NA,
-		note = NA
-	)
+
 	columnDefs <- list(
 		list(field = "local_row_number", hide = TRUE),
 		list(headerName = "Pallet ID #", field = "pallet_id", checkboxSelection = TRUE, headerCheckboxSelection = TRUE, width = 140),
@@ -104,6 +105,12 @@ server <- function(input, output, session) {
 	# this will show initial blank table
 	session$sendCustomMessage(type = "create-aggrid-receiving",
 							  message = dataGridsInShiny::aggrid(gridOptionsInitial))
+	options <- list(rowHeaderLabelPrefix = "test ",
+					rowHeaderWidth = 100,
+					allowEditCells = TRUE,
+					allowSort = TRUE)
+	session$sendCustomMessage(type = "create-grid",
+							  message = dataGridsInShiny::datagridxl(emptydf, options))
 
 	observe({
 		print(input$tabs)
@@ -130,7 +137,8 @@ server <- function(input, output, session) {
 			print("calling custommessage for gridXL")
 			options <- list(rowHeaderLabelPrefix = "test ",
 							rowHeaderWidth = 100,
-							allowEditCells = FALSE)
+							allowEditCells = TRUE,
+							allowSort = TRUE)
 			session$sendCustomMessage(type = "create-grid",
 									  message = dataGridsInShiny::datagridxl(sampledf, options))
 		}
