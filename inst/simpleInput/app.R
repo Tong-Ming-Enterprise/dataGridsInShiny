@@ -27,8 +27,8 @@ ui <- fluidPage(
         sidebarPanel(
         	# create tab panel for each grid
         	tabsetPanel(id = "tabs",
-        		tabPanel("AG-Grid",dataGridsInShiny::aggridUI('aggrid-container')),
         		tabPanel("gridXL", dataGridsInShiny::datagridxlUI()),
+        		tabPanel("AG-Grid",dataGridsInShiny::aggridUI('aggrid-container')),
         		tabPanel("excel", tableOutput("table"))
         	),
             sliderInput("bins",
@@ -74,7 +74,7 @@ sampledf2 <- data.frame(
 )
 # this is a sample blank page with some prefilled column
 emptydf <- data.frame(
-	local_row_number = NA,
+	local_row_number = c(1),
 	pallet_id = NA,
 	incoming_shipment_id = NA,
 	old_location = NA,
@@ -103,14 +103,15 @@ server <- function(input, output, session) {
 		#editType = 'fullRow'
 	)
 	# this will show initial blank table
-	session$sendCustomMessage(type = "create-aggrid-receiving",
-							  message = dataGridsInShiny::aggrid(gridOptionsInitial))
 	options <- list(rowHeaderLabelPrefix = "test ",
 					rowHeaderWidth = 100,
 					allowEditCells = TRUE,
 					allowSort = TRUE)
 	session$sendCustomMessage(type = "create-grid",
 							  message = dataGridsInShiny::datagridxl(emptydf, options))
+
+	session$sendCustomMessage(type = "create-aggrid-receiving",
+							  message = dataGridsInShiny::aggrid(gridOptionsInitial))
 
 	observe({
 		print(input$tabs)
