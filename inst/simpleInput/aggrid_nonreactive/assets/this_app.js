@@ -117,7 +117,7 @@ Shiny.addCustomMessageHandler(type = "create-aggrid-receiving", function(rgridOp
 		//newcolDef[2].valueParser = numberParser
 		//newcolDef[3].valueParser = numberParser
 		//newcolDef[4].valueParser = numberParser
-		newcolDef[5].valueParser = numberParser
+		//newcolDef[5].valueParser = numberParser
 		// https://www.ag-grid.com/javascript-data-grid/value-setters/
 
 		// 2. assigned checkboxRenderer to the columnDefs
@@ -189,7 +189,7 @@ function sendGridData(using_lib = "AGGrid"){
 	    });
 		selRow.forEach(item => {outData[item.local_row_number-1].arrived = true});
 		//combine sel and new_location to form new column
-		selRow.forEach(item => {outData[item.local_row_number-1].combine_newlocaiton = outData[item.local_row_number-1].sel+outData[item.local_row_number-1].newlocation});
+		selRow.forEach(item => {outData[item.local_row_number-1].mynewlocation = !isNaN(item.new_location)?(item.sel+item.new_location):item.sel });
 	    // ag-grid will change edited value to text this will cause issue when sending data back into R
 	    // so need to change them to int. this will be case by case depend on what the origianl data is
 	    outData = changeDataType(outData)
