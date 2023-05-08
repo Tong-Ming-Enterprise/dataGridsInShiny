@@ -111,17 +111,18 @@ Shiny.addCustomMessageHandler(type = "create-aggrid-receiving", function(rgridOp
 		gridOptions.onRowSelected = onCellSelected
 
 		// make column numeric input
+		// the order are from declaration of columnDefs foud in app.R
 		newcolDef = rgridOptions.columnDefs
-
-		newcolDef[2].valueParser = numberParser
-		newcolDef[3].valueParser = numberParser
-		newcolDef[4].valueParser = numberParser
+		//console.log(newcolDef)
+		//newcolDef[2].valueParser = numberParser
+		//newcolDef[3].valueParser = numberParser
+		//newcolDef[4].valueParser = numberParser
 		newcolDef[5].valueParser = numberParser
 		// https://www.ag-grid.com/javascript-data-grid/value-setters/
 
 		// 2. assigned checkboxRenderer to the columnDefs
 		// from https://blog.ag-grid.com/binding-boolean-values-to-checkboxes-in-ag-grid/
-		newcolDef[8].cellRenderer = 'checkboxRenderer'
+		//newcolDef[8].cellRenderer = 'checkboxRenderer'
 
 		gridOptions.columnDefs = newcolDef
 
@@ -175,36 +176,40 @@ function changeDataType(outdata) {
 }
 
 // sending data to R variable using Shiny.setInputValue()
-function sendGridData(){
+function sendGridData(using_lib = "AGGrid"){
 	outData = []
-	selRow = gridOptions.api.getSelectedRows()
+	if (using_lib == "AGGrid") {
+		console.log("handling AGGrid output")
+		selRow = gridOptions.api.getSelectedRows()
 
-	gridOptions.api.forEachNode((rowNode, index) => {
-		outData.push(rowNode.data)
-                    console.log('node ' + index + ' is in the grid');
-                    console.log(rowNode.data)
-    });
-	selRow.forEach(item => {outData[item.local_row_number-1].arrived = true});
+		gridOptions.api.forEachNode((rowNode, index) => {
+			outData.push(rowNode.data)
+	                    console.log('node ' + index + ' is in the grid');
+	                    console.log(rowNode.data)
+	    });
+		selRow.forEach(item => {outData[item.local_row_number-1].arrived = true});
+		//combine sel and new_location to form new column
+		selRow.forEach(item => {outData[item.local_row_number-1].combine_newlocaiton = outData[item.local_row_number-1].sel+outData[item.local_row_number-1].newlocation});
+	    // ag-grid will change edited value to text this will cause issue when sending data back into R
+	    // so need to change them to int. this will be case by case depend on what the origianl data is
+	    outData = changeDataType(outData)
+	    console.log(outData)
+		// https://shiny.rstudio.com/articles/communicating-with-js.html
+		// https://book.javascript-for-r.com/shiny-complete.html  chapter 12.8
+		// variableName:inputHandlerName. variableName is griddata2 and inputHandler is defined in /R/zzz.R call aggrid.griddata
+		Shiny.setInputValue('griddata2:aggrid_griddata', outData);
 
-    // ag-grid will change edited value to text this will cause issue when sending data back into R
-    // so need to change them to int. this will be case by case depend on what the origianl data is
-    outData = changeDataType(outData)
-    console.log(outData)
-	// https://shiny.rstudio.com/articles/communicating-with-js.html
-	// https://book.javascript-for-r.com/shiny-complete.html  chapter 12.8
-	// variableName:inputHandlerName. variableName is griddata2 and inputHandler is defined in /R/zzz.R call aggrid.griddata
-	Shiny.setInputValue('griddata2:aggrid_griddata', outData);
+		console.log(selRow)
+		Shiny.setInputValue('griddata3:aggrid_griddata', selRow);
 
-	console.log(selRow)
-	Shiny.setInputValue('griddata3:aggrid_griddata', selRow);
+		Shiny.setInputValue('unsaved_changes', false);
 
-	Shiny.setInputValue('unsaved_changes', false);
-
-	var unsaved_warning_button = document.getElementById("unsaved_warning_button");
-	unsaved_warning_button.style.visibility = "hidden";
-
-	//aggrid.events.on('setcellvalues', sendChangeEvent); // start listening for changes again
-
+		var unsaved_warning_button = document.getElementById("unsaved_warning_button");
+		if (unsaved_warning_button) {
+			unsaved_warning_button.style.visibility = "hidden";
+		}
+		//aggrid.events.on('setcellvalues', sendChangeEvent); // start listening for changes again
+	}
 }
 
 var editedRow = []

@@ -11,11 +11,13 @@ library(shiny)
 library(gridlayout)
 devtools::load_all(".")
 
-addResourcePath("assets", system.file("simpleInput","aggrid_nonreactive","assets", package = "dataGridsInShiny"))
+addResourcePath("assetsag", system.file("simpleInput","aggrid_nonreactive","assets", package = "dataGridsInShiny"))
+addResourcePath("assetsxl", system.file("simpleInput","gridxl_nonreactive","assets", package = "dataGridsInShiny"))
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
-	tags$head(tags$script(src= "assets/this_app.js")),
+	tags$head(tags$script(src= "assetsag/this_app.js")),
+	tags$head(tags$script(src= "assetsxl/this_app.js")),
 
     # Application title
     titlePanel("Test Grid Input"),
@@ -25,8 +27,8 @@ ui <- fluidPage(
         sidebarPanel(
         	# create tab panel for each grid
         	tabsetPanel(id = "tabs",
-        		tabPanel("AG-Grid",dataGridsInShiny::aggridUI('aggrid-container'),),
-        		tabPanel("gridXL", verbatimTextOutput("summary")),
+        		tabPanel("AG-Grid",dataGridsInShiny::aggridUI('aggrid-container')),
+        		tabPanel("gridXL", dataGridsInShiny::datagridxlUI()),
         		tabPanel("excel", tableOutput("table"))
         	),
             sliderInput("bins",
@@ -43,7 +45,10 @@ ui <- fluidPage(
            actionButton("load_custom_data2", "Load custom data 2", class = "btn-primary"),
            tags$button(class = "btn btn-primary",
            			onClick = "sendGridData()",       #this javascript function is found in this_app.js link in tag above
-           			"Send Data to DT"),
+           			"Send AG Data to DT"),
+           tags$button(class = "btn btn-primary",
+           			onClick = "sendGridXLData()",       #this javascript function is found in this_app.js link in tag above
+           			"Send XL Data to DT"),
            DT::DTOutput("dt"),
            DT::DTOutput("dtsel"),
            width = 5                   #total width out of 12
@@ -53,28 +58,18 @@ ui <- fluidPage(
 
 sampledf <- data.frame(
 	local_row_number = c(1,2,3,4,5,6,7,8,9,10),
-	po_row_id = c(100, 101, 102, 103, 104, 105, 106, 107, 108, 109),
-	num_carton = c(2, 4, 6, 8, 10, 12, 14, 16, 18, 20),
-	num_box = c(0, 0, 0, 0, 0, 0, 0, 16, 18, 0),
-	num_bag = c(0, 0, 0, 0, 0, 48, 28, 0, 0, 0),
-	num_piece = c(1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000),
-	supplier_pallet = c(1, 1, 2, 2, 3, 5, 6, 8, 9, 11),
-	purhase_price = c(1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0),
-	done = c(TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE),
-	p_date = c("2023-04-20","2023-04-20","2023-04-20","2023-04-20","2023-04-20","2023-04-20","2023-04-20","2023-04-20","2023-04-20","2023-04-20"),
+	pallet_id = c(81,82,83,84,85,86,87,88,89,90),
+	incoming_shipment_id = c(21, 21, 21, 21, 21, 21, 21, 21, 21, 21),
+	old_location = c("收貨區","收貨區","收貨區","收貨區","收貨區","收貨區","收貨區","收貨區","收貨區","收貨區"),
+	new_location = c(0, 0, 0, 0, 0, 0, 0, 16, 18, 0),
 	note = c("1","1","1","1","1","1","1","1","1","1")
 )
 sampledf2 <- data.frame(
 	local_row_number = c(1,2,3,4,5,6,7,8,9,10),
-	po_row_id = c(4100, 4101, 4102, 4103, 4104, 4105, 4106, 4107, 4108, 4109),
-	num_carton = c(82, 84, 86, 88, 90, 12, 14, 16, 18, 20),
-	num_box = c(2, 4, 6, 0, 0, 0, 0, 16, 18, 0),
-	num_bag = c(0, 0, 0, 0, 0, 48, 28, 0, 0, 0),
-	num_piece = c(21000, 22000, 23000, 24000, 25000, 26000, 27000, 28000, 29000, 210000),
-	supplier_pallet = c(1, 1, 2, 2, 3, 5, 6, 8, 9, 11),
-	purhase_price = c(1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0),
-	done = c(TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE),
-	p_date = c("2023-04-20","2023-04-20","2023-04-20","2023-04-20","2023-04-20","2023-04-20","2023-04-20","2023-04-20","2023-04-20","2023-04-20"),
+	pallet_id = c(91,92,93,94,95,96,97,98,99,100),
+	incoming_shipment_id = c(44, 44, 44, 44, 44, 44, 44, 44, 44, 44),
+	old_location = c("收貨區","收貨區","收貨區","收貨區","收貨區","收貨區","收貨區","收貨區","收貨區","收貨區"),
+	new_location = c(2, 4, 6, 0, 0, 0, 0, 16, 18, 0),
 	note = c("1","1","1","1","1","1","1","1","1","1")
 )
 
@@ -84,29 +79,18 @@ server <- function(input, output, session) {
 	# this is a sample blank page with some prefilled column
 	emptydf <- data.frame(
 		local_row_number = c(1,2,3,4,5,6,7),
-		po_row_id = c(4100, 4101, 4102, 4103, 4104, 4105, 4106),
-		num_carton = NA,
-		num_box = NA,
-		num_bag = NA,
-		num_piece = NA,
-		supplier_pallet = c(1, 1, 2, 2, 3, 5, 6),
-		purhase_price = c(1.0,1.0,1.0,1.0,1.0,1.0,1.0),
-		done = c(TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE),
-		p_date = c("2023-04-20","2023-04-20","2023-04-20","2023-04-20","2023-04-20","2023-04-20","2023-04-20"),
+		incoming_shipment_id = c(4100, 4101, 4102, 4103, 4104, 4105, 4106),
+		old_location = c("2023-04-20","2023-04-20","2023-04-20","2023-04-20","2023-04-20","2023-04-20","2023-04-20"),
+		new_location = NA,
 		note = NA
 	)
 	columnDefs <- list(
-		list(headerName = "Row #", field = "local_row_number", checkboxSelection = TRUE, headerCheckboxSelection = TRUE, width = 110),
-		list(headerName = "PO", field = "po_row_id", width = 120),
-		list(headerName = "Carton", field = "num_carton", editable = TRUE, singleClickEdit = TRUE, filter = 'agNumberColumnFilter', width = 120),
-		list(headerName = "Box", field = "num_box", editable = TRUE, singleClickEdit = TRUE, width = 120),
-		list(headerName = "Bag", field = "num_bag", editable = TRUE, singleClickEdit = TRUE, width = 120),
-		list(headerName = "Piece", field = "num_piece", editable = TRUE, singleClickEdit = TRUE, width = 120),
-		list(headerName = "Pallet", field = "supplier_pallet", width = 120),
-		list(headerName = "Price", field = 'purhase_price', cellClass = 'currencyFormat', editable = TRUE, singleClickEdit = TRUE, width =120),
-		list(headerName = "Done", field = "done", cellClass = 'booleanType', editable = TRUE, singleClickEdit = TRUE, width = 80),
-		list(headerName = "Date", field = 'p_date', cellClass = 'dateType', editable = TRUE, singleClickEdit = TRUE, cellEditor = 'DatePicker', cellEditorPopup = TRUE, width = 240),
-		list(headerName = "Select", field = "sel", editable = TRUE, singleClickEdit = TRUE, cellEditor = 'agSelectCellEditor', cellEditorParams = list(values = list('English', 'Spanish', 'French', 'Portuguese', '(other)'))),
+		list(field = "local_row_number", hide = TRUE),
+		list(headerName = "Pallet ID #", field = "pallet_id", checkboxSelection = TRUE, headerCheckboxSelection = TRUE, width = 140),
+		list(headerName = "shipment ID", field = "incoming_shipment_id", width = 120),
+		list(headerName = "Old Location", field = 'old_location', width = 120),
+		list(headerName = "Select", field = "sel", editable = TRUE, singleClickEdit = TRUE, cellEditor = 'agSelectCellEditor', cellEditorParams = list(values = list('E', 'F' )), width = 80),
+		list(headerName = "New Location", field = "new_location", editable = TRUE, singleClickEdit = TRUE, width = 120),
 		list(headerName = "Note", field = "note", editable = TRUE, singleClickEdit = TRUE, cellEditor = 'agLargeTextCellEditor', cellEditorPopup = TRUE, cellEditorParams = list(maxLength = 100,rows = 10, cols = 50))
 	)
 	gridOptionsInitial <- list(
@@ -122,7 +106,7 @@ server <- function(input, output, session) {
 							  message = dataGridsInShiny::aggrid(gridOptionsInitial))
 
 	observe({
-		#print(input$tabs)
+		print(input$tabs)
 		purrOutput <- sampledf %>% purrr::transpose()
 		#gridOptions <- c(gridOptionsInitial, rowData = purrOutput)
 		# Grid options
@@ -142,6 +126,13 @@ server <- function(input, output, session) {
 			mtype = "update-aggrid-receiving"
 			session$sendCustomMessage(type = mtype,
 									  message = dataGridsInShiny::aggrid(gridOptions))
+		} else if (input$tabs == "gridXL") {
+			print("calling custommessage for gridXL")
+			options <- list(rowHeaderLabelPrefix = "test ",
+							rowHeaderWidth = 100,
+							allowEditCells = FALSE)
+			session$sendCustomMessage(type = "create-grid",
+									  message = dataGridsInShiny::datagridxl(sampledf, options))
 		}
 		}) %>% bindEvent(input$load_custom_data)
 
@@ -166,6 +157,13 @@ server <- function(input, output, session) {
 			mtype = "update-aggrid-receiving"
 			session$sendCustomMessage(type = mtype,
 									  message = dataGridsInShiny::aggrid(gridOptions))
+		} else if (input$tabs == "gridXL") {
+			print("calling custommessage for gridXL")
+			options <- list(rowHeaderLabelPrefix = "test ",
+							rowHeaderWidth = 100,
+							allowEditCells = FALSE)
+			session$sendCustomMessage(type = "create-grid",
+									  message = dataGridsInShiny::datagridxl(sampledf2, options))
 		}
 	}) %>% bindEvent(input$load_custom_data2)
 
@@ -177,16 +175,6 @@ server <- function(input, output, session) {
 		req(input$griddata3)
 		input$griddata3})
 
-    output$distPlot <- renderPlot({
-        # generate bins based on input$bins from ui.R
-        x    <- faithful[, 2]
-        bins <- seq(min(x), max(x), length.out = input$bins + 1)
-
-        # draw the histogram with the specified number of bins
-        hist(x, breaks = bins, col = 'darkgray', border = 'white',
-             xlab = 'Waiting time to next eruption (in mins)',
-             main = 'Histogram of waiting times')
-    })
 }
 
 # Run the application
