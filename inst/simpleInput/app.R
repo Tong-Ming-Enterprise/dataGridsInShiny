@@ -77,9 +77,11 @@ sampledf2 <- data.frame(
 	new_location = c("2", "4", "6", "0", "0", "0", "0", "16", "18", "0"),
 	note = c("1","1","1","1","1","1","1","1","1","1")
 )
-# this is a sample blank page with some prefilled column
+# this is a sample blank page with type specify by NA_... so far only rHandsOnTable use this type in empty table other use
+# columndef to define type for the column
+
 emptydf <- data.frame(
-	local_row_number = c(1,2,3),
+	local_row_number = c(1,2,3,4,5),
 	pallet_id = NA_integer_,
 	incoming_shipment_id = NA_integer_,
 	old_location = NA_character_,
@@ -89,6 +91,7 @@ emptydf <- data.frame(
 )
 
 locationOptions <- c(NA_character_, "E", "F")
+newlocal <- c("0111","0212","0313","0414")
 
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
@@ -120,7 +123,6 @@ server <- function(input, output, session) {
 	session$sendCustomMessage(type = "create-aggrid-receiving",
 							  message = dataGridsInShiny::aggrid(gridOptionsInitial))
 
-	newlocal <- c("0111","0212","0313","0414")
 	output$rhtable <- renderRHandsontable({rhandsontable(emptydf, width = "100%", height = 400)  %>%
 			hot_col("local_row_number", readOnly = TRUE) %>%
 			hot_col("pallet_id", readOnly = TRUE) %>%
@@ -162,7 +164,15 @@ server <- function(input, output, session) {
 									  message = dataGridsInShiny::datagridxl(sampledf, options))
 		} else if (input$tabs == "rHandsOn") {
 			print("calling load custommessage for rHandsOn")
-
+			output$rhtable <- renderRHandsontable({rhandsontable(sampledf, width = "100%", height = "100%")  %>%
+					hot_col("local_row_number", readOnly = TRUE) %>%
+					hot_col("pallet_id", readOnly = TRUE) %>%
+					hot_col("incoming_shipment_id", readOnly = TRUE) %>%
+					hot_col("old_location", readOnly = TRUE) %>%
+					hot_col("sel", type = "dropdown", source = locationOptions) %>%
+					hot_col("new_location",type = "autocomplete", source = newlocal,
+							strict = FALSE)
+			})
 		}
 	}) %>% bindEvent(input$load_custom_data)
 
@@ -194,6 +204,17 @@ server <- function(input, output, session) {
 							allowEditCells = FALSE)
 			session$sendCustomMessage(type = "create-grid",
 									  message = dataGridsInShiny::datagridxl(sampledf2, options))
+		} else if (input$tabs == "rHandsOn") {
+			print("calling load custommessage for rHandsOn")
+			output$rhtable <- renderRHandsontable({rhandsontable(sampledf2, width = "100%", height = "100%")  %>%
+					hot_col("local_row_number", readOnly = TRUE) %>%
+					hot_col("pallet_id", readOnly = TRUE) %>%
+					hot_col("incoming_shipment_id", readOnly = TRUE) %>%
+					hot_col("old_location", readOnly = TRUE) %>%
+					hot_col("sel", type = "dropdown", source = locationOptions) %>%
+					hot_col("new_location",type = "autocomplete", source = newlocal,
+							strict = FALSE)
+			})
 		}
 	}) %>% bindEvent(input$load_custom_data2)
 
