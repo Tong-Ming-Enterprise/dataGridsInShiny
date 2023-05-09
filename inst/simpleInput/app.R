@@ -7,13 +7,19 @@
 #    http://shiny.rstudio.com/
 #
 
+library(tidyr)
+library(dplyr)
 library(shiny)
+library(stringr)
 library(gridlayout)
 library(rhandsontable)
+library(excelR)
 devtools::load_all(".")
 
 addResourcePath("assetsag", system.file("simpleInput","aggrid_nonreactive","assets", package = "dataGridsInShiny"))
 addResourcePath("assetsxl", system.file("simpleInput","gridxl_nonreactive","assets", package = "dataGridsInShiny"))
+
+# https://swechhya.github.io/excelR/
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -31,7 +37,7 @@ ui <- fluidPage(
         		tabPanel("gridXL", dataGridsInShiny::datagridxlUI()),
         		tabPanel("AG-Grid",dataGridsInShiny::aggridUI('aggrid-container')),
         		tabPanel("rHandsOn",rHandsontableOutput("rhtable")),
-        		tabPanel("excel", tableOutput("table"))
+        		tabPanel("excelR", excelOutput("excelRtable"))
         	),
             #sliderInput("bins",
             #            "Number of bins:",
@@ -86,16 +92,23 @@ emptydf <- data.frame(
 	incoming_shipment_id = NA_integer_,
 	old_location = NA_character_,
 	sel = NA,
-	new_location = NA,
+	new_location = NA_character_,
 	note = NA_character_
 )
 
+# define for excelR
+columns = data.frame(title = c('','Pallet ID #', 'shipment ID', 'Old Location', 'Select', 'New Location', 'Note'),
+					 width = c(80, 140, 120, 120, 80, 120, 80),
+					 type = c('text', 'text', 'text', 'text',  'dropdown', 'text', 'text'),
+					 source = I(list(0,0,0,0,c('E','F'),0,0))
+					 )
+
+# define for rHandsOnTable
 locationOptions <- c(NA_character_, "E", "F")
 newlocal <- c("0111","0212","0313","0414")
 
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
-
 
 	columnDefs <- list(
 		list(field = "local_row_number", hide = TRUE),
@@ -132,6 +145,8 @@ server <- function(input, output, session) {
 			hot_col("new_location",type = "autocomplete", source = newlocal,
 					strict = FALSE)
 	})
+
+	output$excelRtable <- renderExcel(excelTable(data = head(emptydf), columns = columns ))
 
 	observe({
 		print(input$tabs)
@@ -173,6 +188,9 @@ server <- function(input, output, session) {
 					hot_col("new_location",type = "autocomplete", source = newlocal,
 							strict = FALSE)
 			})
+		} else if (input$tabs == "excelR") {
+			print("calling load custommessage for excelR")
+			output$excelRtable <- renderExcel(excelTable(data = head(sampledf), columns = columns ))
 		}
 	}) %>% bindEvent(input$load_custom_data)
 
@@ -215,17 +233,31 @@ server <- function(input, output, session) {
 					hot_col("new_location",type = "autocomplete", source = newlocal,
 							strict = FALSE)
 			})
+		} else if (input$tabs == "excelR") {
+			print("calling load custommessage for excelR")
+			output$excelRtable <- renderExcel(excelTable(data = head(sampledf2), columns = columns ))
 		}
 	}) %>% bindEvent(input$load_custom_data2)
 
 	observe({
-		# send custom message to JS.
-		# the columnDef, gridOptions and data are sent to javascript
+		# pure R code for rHandsOnTable wrapper
 
 		# send data depend on which tab was selected
 		if (input$tabs == "rHandsOn") {
 			print("calling custommessage for rHandsOn")
 			test_df = hot_to_r(input$rhtable)
+
+			# https://stackoverflow.com/questions/53118271/difference-between-paste-str-c-str-join-stri-join-stri-c-stri-pa
+			# unite needs library(tidyverse) need to set na.rm = TRUE to ignore NA
+			test_df <- test_df %>%
+				       unite(mynew_location, sel, new_location, sep = "", remove = FALSE, na.rm = TRUE)
+			# needs library(stringi)
+			#test_df$mynew_locaiton <- stri_join(test_df$sel,test_df$new_location)
+
+			# use library(stringr) auto ignore NA
+			test_df <- test_df %>% mutate(
+				mynewc_location = str_c(sel, new_location)
+			)
 			print(test_df)
 			output$dt <- DT::renderDT({
 				req(test_df)
