@@ -124,9 +124,9 @@ server <- function(input, output, session) {
 							  message = dataGridsInShiny::aggrid(gridOptionsInitial))
 
 	output$rhtable <- renderRHandsontable({rhandsontable(emptydf, width = "100%", height = 400)  %>%
-			hot_col("local_row_number", readOnly = TRUE) %>%
-			hot_col("pallet_id", readOnly = TRUE) %>%
-			hot_col("incoming_shipment_id", readOnly = TRUE) %>%
+			hot_col("local_row_number", readOnly = TRUE, format = "0.") %>%
+			hot_col("pallet_id", readOnly = TRUE, format = "0.") %>%
+			hot_col("incoming_shipment_id", readOnly = TRUE, format = "0.") %>%
 			hot_col("old_location", readOnly = TRUE) %>%
 			hot_col("sel", type = "dropdown", source = locationOptions) %>%
 			hot_col("new_location",type = "autocomplete", source = newlocal,
@@ -165,9 +165,9 @@ server <- function(input, output, session) {
 		} else if (input$tabs == "rHandsOn") {
 			print("calling load custommessage for rHandsOn")
 			output$rhtable <- renderRHandsontable({rhandsontable(sampledf, width = "100%", height = "100%")  %>%
-					hot_col("local_row_number", readOnly = TRUE) %>%
-					hot_col("pallet_id", readOnly = TRUE) %>%
-					hot_col("incoming_shipment_id", readOnly = TRUE) %>%
+					hot_col("local_row_number", readOnly = TRUE, format = "0.") %>%
+					hot_col("pallet_id", readOnly = TRUE, format = "0.") %>%
+					hot_col("incoming_shipment_id", readOnly = TRUE, format = "0.") %>%
 					hot_col("old_location", readOnly = TRUE) %>%
 					hot_col("sel", type = "dropdown", source = locationOptions) %>%
 					hot_col("new_location",type = "autocomplete", source = newlocal,
