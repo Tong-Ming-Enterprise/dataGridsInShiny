@@ -9,6 +9,7 @@
 
 library(shiny)
 library(gridlayout)
+library(rhandsontable)
 devtools::load_all(".")
 
 addResourcePath("assetsag", system.file("simpleInput","aggrid_nonreactive","assets", package = "dataGridsInShiny"))
@@ -31,11 +32,11 @@ ui <- fluidPage(
         		tabPanel("AG-Grid",dataGridsInShiny::aggridUI('aggrid-container')),
         		tabPanel("excel", tableOutput("table"))
         	),
-            sliderInput("bins",
-                        "Number of bins:",
-                        min = 1,
-                        max = 50,
-                        value = 30),
+            #sliderInput("bins",
+            #            "Number of bins:",
+            #            min = 1,
+            #            max = 50,
+            #            value = 30),
         	width = 7                  # total width out of 12
         ),
 
@@ -74,7 +75,7 @@ sampledf2 <- data.frame(
 )
 # this is a sample blank page with some prefilled column
 emptydf <- data.frame(
-	local_row_number = c(1),
+	local_row_number = c(1,2,3),
 	pallet_id = NA,
 	incoming_shipment_id = NA,
 	old_location = NA,
@@ -103,9 +104,7 @@ server <- function(input, output, session) {
 		#editType = 'fullRow'
 	)
 	# this will show initial blank table
-	options <- list(rowHeaderLabelPrefix = "test ",
-					rowHeaderWidth = 100,
-					allowEditCells = TRUE,
+	options <- list(allowEditCells = TRUE,
 					allowSort = TRUE)
 	session$sendCustomMessage(type = "create-grid",
 							  message = dataGridsInShiny::datagridxl(emptydf, options))
