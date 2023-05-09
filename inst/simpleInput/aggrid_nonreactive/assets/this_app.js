@@ -179,10 +179,9 @@ function changeDataType(outdata) {
 function sendGridData(using_lib = "AGGrid"){
 	outData = []
 	if (using_lib == "AGGrid") {
-		console.log("handling AGGrid output")
-		allRow = gridOptions.api.getr
+		//console.log("handling AGGrid output")
 		selRow = gridOptions.api.getSelectedRows()
-
+		// looping thru all the nodes
 		gridOptions.api.forEachNode((rowNode, index) => {
 			rowNode.data.mynewlocation = !isNaN(rowNode.data.new_location)
 			                             ?(rowNode.data.sel+rowNode.data.new_location)
@@ -191,6 +190,7 @@ function sendGridData(using_lib = "AGGrid"){
 	                    console.log('node ' + index + ' is in the grid');
 	                    console.log(rowNode.data)
 	    });
+	    // set arrived to true for all selected rows
 		selRow.forEach(item => {outData[item.local_row_number-1].arrived = true});
 		//combine sel and new_location to form new column
 		selRow.forEach(item => {outData[item.local_row_number-1].myselnewlocation = !isNaN(item.new_location)?(item.sel+item.new_location):item.sel });
