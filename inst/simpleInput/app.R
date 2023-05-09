@@ -58,8 +58,10 @@ ui <- fluidPage(
            			onClick = "sendGridXLData()",       #this javascript function is found in this_app.js link in tag above
            			"Send XL Data to DT"),
            actionButton("send_rhandson_data", "send rHandsOn to DT", class = "btn-primary"),
+           actionButton("send_excelR_data", "send excelR to DT", class = "btn-primary"),
            DT::DTOutput("dt"),
            DT::DTOutput("dtsel"),
+           excelOutput("table", height = 175),
            width = 5                   #total width out of 12
         )
     )
@@ -146,7 +148,7 @@ server <- function(input, output, session) {
 					strict = FALSE)
 	})
 
-	output$excelRtable <- renderExcel(excelTable(data = head(emptydf), columns = columns ))
+	output$excelRtable <- renderExcel(excelTable(data = head(emptydf), columns = columns, rowDrag = TRUE, columnDrag = TRUE, pagination=10, search=TRUE, showToolbar=TRUE, getSelectedData = TRUE ))
 
 	observe({
 		print(input$tabs)
@@ -190,7 +192,7 @@ server <- function(input, output, session) {
 			})
 		} else if (input$tabs == "excelR") {
 			print("calling load custommessage for excelR")
-			output$excelRtable <- renderExcel(excelTable(data = head(sampledf), columns = columns ))
+			output$excelRtable <- renderExcel(excelTable(data = head(sampledf), columns = columns, rowDrag = TRUE, columnDrag = TRUE, pagination=10, search=TRUE, showToolbar=TRUE, getSelectedData = TRUE  ))
 		}
 	}) %>% bindEvent(input$load_custom_data)
 
@@ -235,13 +237,13 @@ server <- function(input, output, session) {
 			})
 		} else if (input$tabs == "excelR") {
 			print("calling load custommessage for excelR")
-			output$excelRtable <- renderExcel(excelTable(data = head(sampledf2), columns = columns ))
+			output$excelRtable <- renderExcel(excelTable(data = head(sampledf2), columns = columns, rowDrag = TRUE, columnDrag = TRUE, pagination=10, search=TRUE, showToolbar=TRUE, getSelectedData = TRUE ))
 		}
 	}) %>% bindEvent(input$load_custom_data2)
 
 	observe({
 		# pure R code for rHandsOnTable wrapper
-
+		print(input$tabs)
 		# send data depend on which tab was selected
 		if (input$tabs == "rHandsOn") {
 			print("calling custommessage for rHandsOn")
@@ -266,6 +268,26 @@ server <- function(input, output, session) {
 			#print(user_data_frame)
 		}
 	}) %>% bindEvent(input$send_rhandson_data)
+
+	observe({
+		if (input$tabs == "excelR") {
+
+			table_data <- excel_to_R(input$excelRtable)
+			#table_data <- table_data %>%
+			#	unite('mynew_location', 'Select', 'New Location', sep = "", remove = FALSE, na.rm = TRUE)
+			print(table_data)
+			if(!is.null(table_data)){
+				output$dt <- DT::renderDT({
+					req(table_data)
+					table_data})
+			}
+			selData <- (get_selected_data(input$excelRtable))
+			print(selData)
+			output$dtsel <- DT::renderDT(selData)
+
+		}
+	}) %>% bindEvent(input$send_excelR_data)
+
 
 	output$dt <- DT::renderDT({
 		req(input$griddata2)
