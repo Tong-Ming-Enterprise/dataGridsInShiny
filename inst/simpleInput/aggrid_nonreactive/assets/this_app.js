@@ -180,16 +180,20 @@ function sendGridData(using_lib = "AGGrid"){
 	outData = []
 	if (using_lib == "AGGrid") {
 		console.log("handling AGGrid output")
+		allRow = gridOptions.api.getr
 		selRow = gridOptions.api.getSelectedRows()
 
 		gridOptions.api.forEachNode((rowNode, index) => {
+			rowNode.data.mynewlocation = !isNaN(rowNode.data.new_location)
+			                             ?(rowNode.data.sel+rowNode.data.new_location)
+			                             :rowNode.data.sel
 			outData.push(rowNode.data)
 	                    console.log('node ' + index + ' is in the grid');
 	                    console.log(rowNode.data)
 	    });
 		selRow.forEach(item => {outData[item.local_row_number-1].arrived = true});
 		//combine sel and new_location to form new column
-		selRow.forEach(item => {outData[item.local_row_number-1].mynewlocation = !isNaN(item.new_location)?(item.sel+item.new_location):item.sel });
+		selRow.forEach(item => {outData[item.local_row_number-1].myselnewlocation = !isNaN(item.new_location)?(item.sel+item.new_location):item.sel });
 	    // ag-grid will change edited value to text this will cause issue when sending data back into R
 	    // so need to change them to int. this will be case by case depend on what the origianl data is
 	    outData = changeDataType(outData)

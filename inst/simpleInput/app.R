@@ -30,6 +30,7 @@ ui <- fluidPage(
         	tabsetPanel(id = "tabs",
         		tabPanel("gridXL", dataGridsInShiny::datagridxlUI()),
         		tabPanel("AG-Grid",dataGridsInShiny::aggridUI('aggrid-container')),
+        		tabPanel("rHandsOn",rHandsontableOutput("rhtable")),
         		tabPanel("excel", tableOutput("table"))
         	),
             #sliderInput("bins",
@@ -45,11 +46,12 @@ ui <- fluidPage(
            actionButton("load_custom_data", "Load custom data", class = "btn-primary"),
            actionButton("load_custom_data2", "Load custom data 2", class = "btn-primary"),
            tags$button(class = "btn btn-primary",
-           			onClick = "sendGridData()",       #this javascript function is found in this_app.js link in tag above
+           			onClick = "sendGridData()",         #this javascript function is found in this_app.js link in tag above
            			"Send AG Data to DT"),
            tags$button(class = "btn btn-primary",
            			onClick = "sendGridXLData()",       #this javascript function is found in this_app.js link in tag above
            			"Send XL Data to DT"),
+           actionButton("send_rhandson_data", "send rHandsOn to DT", class = "btn-primary"),
            DT::DTOutput("dt"),
            DT::DTOutput("dtsel"),
            width = 5                   #total width out of 12
@@ -62,6 +64,7 @@ sampledf <- data.frame(
 	pallet_id = c(81,82,83,84,85,86,87,88,89,90),
 	incoming_shipment_id = c(21, 21, 21, 21, 21, 21, 21, 21, 21, 21),
 	old_location = c("收貨區","收貨區","收貨區","收貨區","收貨區","收貨區","收貨區","收貨區","收貨區","收貨區"),
+	sel = c("F","F","F","F","F","F","F","F","F","F"),
 	new_location = c("0", "0", "0", "0", "0", "0", "0", "16", "18", "0"),
 	note = c("1","1","1","1","1","1","1","1","1","1")
 )
@@ -70,18 +73,23 @@ sampledf2 <- data.frame(
 	pallet_id = c(91,92,93,94,95,96,97,98,99,100),
 	incoming_shipment_id = c(44, 44, 44, 44, 44, 44, 44, 44, 44, 44),
 	old_location = c("收貨區","收貨區","收貨區","收貨區","收貨區","收貨區","收貨區","收貨區","收貨區","收貨區"),
+	sel = c("F","F","F","F","F","F","F","F","F","F"),
 	new_location = c("2", "4", "6", "0", "0", "0", "0", "16", "18", "0"),
 	note = c("1","1","1","1","1","1","1","1","1","1")
 )
 # this is a sample blank page with some prefilled column
 emptydf <- data.frame(
 	local_row_number = c(1,2,3),
-	pallet_id = NA,
-	incoming_shipment_id = NA,
-	old_location = NA,
+	pallet_id = NA_integer_,
+	incoming_shipment_id = NA_integer_,
+	old_location = NA_character_,
+	sel = NA,
 	new_location = NA,
-	note = NA
+	note = NA_character_
 )
+
+locationOptions <- c(NA_character_, "E", "F")
+
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
 
@@ -112,6 +120,17 @@ server <- function(input, output, session) {
 	session$sendCustomMessage(type = "create-aggrid-receiving",
 							  message = dataGridsInShiny::aggrid(gridOptionsInitial))
 
+	newlocal <- c("0111","0212","0313","0414")
+	output$rhtable <- renderRHandsontable({rhandsontable(emptydf, width = "100%", height = 400)  %>%
+			hot_col("local_row_number", readOnly = TRUE) %>%
+			hot_col("pallet_id", readOnly = TRUE) %>%
+			hot_col("incoming_shipment_id", readOnly = TRUE) %>%
+			hot_col("old_location", readOnly = TRUE) %>%
+			hot_col("sel", type = "dropdown", source = locationOptions) %>%
+			hot_col("new_location",type = "autocomplete", source = newlocal,
+					strict = FALSE)
+	})
+
 	observe({
 		print(input$tabs)
 		purrOutput <- sampledf %>% purrr::transpose()
@@ -141,8 +160,11 @@ server <- function(input, output, session) {
 							allowSort = TRUE)
 			session$sendCustomMessage(type = "create-grid",
 									  message = dataGridsInShiny::datagridxl(sampledf, options))
+		} else if (input$tabs == "rHandsOn") {
+			print("calling load custommessage for rHandsOn")
+
 		}
-		}) %>% bindEvent(input$load_custom_data)
+	}) %>% bindEvent(input$load_custom_data)
 
 	observe({
 		#print(input$tabs)
@@ -174,6 +196,23 @@ server <- function(input, output, session) {
 									  message = dataGridsInShiny::datagridxl(sampledf2, options))
 		}
 	}) %>% bindEvent(input$load_custom_data2)
+
+	observe({
+		# send custom message to JS.
+		# the columnDef, gridOptions and data are sent to javascript
+
+		# send data depend on which tab was selected
+		if (input$tabs == "rHandsOn") {
+			print("calling custommessage for rHandsOn")
+			test_df = hot_to_r(input$rhtable)
+			print(test_df)
+			output$dt <- DT::renderDT({
+				req(test_df)
+				test_df})
+			#user_data_frame <- fromJSON(output$rhtable$x$data)
+			#print(user_data_frame)
+		}
+	}) %>% bindEvent(input$send_rhandson_data)
 
 	output$dt <- DT::renderDT({
 		req(input$griddata2)
